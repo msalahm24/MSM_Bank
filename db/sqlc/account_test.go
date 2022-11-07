@@ -13,7 +13,7 @@ import (
 func createRandomAccount(t *testing.T)Account{
 	arg := CreateAccountParams{
 		Owner:    util.RandomOwnerName(),
-		Balance:  util.RandomMoney(),
+		Balance:  1000,
 		Currency: util.RandomCurrency(),
 	}
 	account, err := testQueries.CreateAccount(context.Background(), arg)
