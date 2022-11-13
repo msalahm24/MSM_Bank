@@ -19,4 +19,7 @@ test:
 postgres:
 	docker exec -it postgres psql -U root -d msmBank
 
-.PHONY: createdb dropdb migrateup migratedown sqlc test
+server:
+	go run main.go
+
+.PHONY: createdb dropdb migrateup migratedown sqlc test server
