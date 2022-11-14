@@ -4,20 +4,20 @@ import (
 	"database/sql"
 	"log"
 
-	
 	_ "github.com/lib/pq"
 	"github.com/mahmoud24598salah/MSM_Bank/api"
 	db "github.com/mahmoud24598salah/MSM_Bank/db/sqlc"
+	"github.com/mahmoud24598salah/MSM_Bank/util"
 )
 
-const (
-	dbDriver = "postgres"
-	dbSource = "postgres://root:123@localhost:5432/msmBank?sslmode=disable"
-	serverAddress = "0.0.0.0:8080"
-)
+
 
 func main() {
-	conn, err := sql.Open(dbDriver, dbSource)
+	config,err := util.LoadConfig(".")
+	if err != nil{
+		log.Fatal("Can nor read the config file",err)
+	}
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatal("can not connect to database", err)
 	}
@@ -26,7 +26,7 @@ func main() {
 
 	server :=api.Newserver(store)
 
-	err= server.Start(serverAddress)
+	err= server.Start(config.SreverAddress)
 	if err != nil{
 		log.Fatal("Cannot start server",err)
 	}

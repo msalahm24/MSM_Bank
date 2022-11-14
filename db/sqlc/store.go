@@ -6,7 +6,11 @@ import (
 	"fmt"
 )
 
-type Store struct {
+type Store interface {
+	TransferTx(ctx context.Context, arg TransferTxParms) (TransferTxResult, error)
+	Querier 
+}
+type SqlStore struct {
 	*Queries
 	db *sql.DB
 }
@@ -25,14 +29,14 @@ type TransferTxResult struct {
 
 var txKey = struct{}{}
 
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) Store {
+	return &SqlStore{
 		db:      db,
 		Queries: New(db),
 	}
 }
 
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SqlStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -49,7 +53,7 @@ func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 	return tx.Commit()
 }
 
-func (store *Store) TransferTx(ctx context.Context, arg TransferTxParms) (TransferTxResult, error) {
+func (store *SqlStore) TransferTx(ctx context.Context, arg TransferTxParms) (TransferTxResult, error) {
 	var result TransferTxResult
 	var err error
 
