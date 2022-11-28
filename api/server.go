@@ -18,6 +18,7 @@ import (
 	router.GET("/accounts",server.listAccounts) 
 	router.DELETE("/accounts",server.deleteAccount)
 	router.PUT("/accounts",server.putAccount)
+	router.POST("/transfer",server.CreateTransfer)
 	server.router = router
 
 	return server
