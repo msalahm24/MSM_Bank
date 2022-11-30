@@ -10,10 +10,10 @@ import (
 )
 
 type transferRequest struct {
-	FromAccountId int64  `json:"fromAccountID" binding:"required,min=1 "`
-	ToAccountID   int64  `json:"toAccountID" binding:"required,min=1  "`
+	FromAccountId int64  `json:"fromAccountID" binding:"required,min=1"`
+	ToAccountID   int64  `json:"toAccountID" binding:"required,min=1"`
 	Amount        int64  `json:"amount" binding:"required,gt=0"`
-	Currency      string `json:"currency" binding:"required,oneof=USD EUR CAD"`
+	Currency      string `json:"currency" binding:"required,currency"`
 }
 
 func (server *server) CreateTransfer(ctx *gin.Context) {
@@ -29,10 +29,10 @@ func (server *server) CreateTransfer(ctx *gin.Context) {
 		ToAccountID:   req.ToAccountID,
 		Amount:        req.Amount,
 	}
-	if !server.validAccount(ctx,req.FromAccountId,req.Currency){
+	if !server.validAccount(ctx, req.FromAccountId, req.Currency) {
 		return
 	}
-	if !server.validAccount(ctx,req.ToAccountID,req.Currency){
+	if !server.validAccount(ctx, req.ToAccountID, req.Currency) {
 		return
 	}
 	result, err := server.store.TransferTx(ctx, arg)
@@ -54,8 +54,8 @@ func (server *server) validAccount(ctx *gin.Context, accountID int64, currency s
 		ctx.JSON(http.StatusInternalServerError, errResponse(err))
 		return false
 	}
-	if account.Currency != currency{
-		err = fmt.Errorf("invalid currency:%v for account:%v that has currency: %v",currency,accountID,account.Currency)
+	if account.Currency != currency {
+		err = fmt.Errorf("invalid currency:%v for account:%v that has currency: %v", currency, accountID, account.Currency)
 		ctx.JSON(http.StatusBadRequest, errResponse(err))
 		return false
 	}
