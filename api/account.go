@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"github.com/lib/pq"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -30,6 +31,14 @@ func (server *server) createAccount(ctx *gin.Context) {
 
 	account, err := server.store.CreateAccount(ctx, arg)
 	if err != nil {
+		pqErr, ok := err.(*pq.Error)
+		if ok {
+			switch pqErr.Code.Name() {
+			case "unique_violation", "foreign_key_violation":
+				ctx.JSON(http.StatusForbidden, errResponse(err))
+				return
+			}
+		}
 		ctx.JSON(http.StatusInternalServerError, errResponse(err))
 		return
 	}
@@ -74,62 +83,65 @@ func (server *server) listAccounts(ctx *gin.Context) {
 	}
 
 	arg := db.ListAccountsParams{
-		Limit: req.PageSize,
+		Limit:  req.PageSize,
 		Offset: (req.PageId - 1) * req.PageSize,
 	}
-	accounts, err := server.store.ListAccounts(ctx,arg)
-	if err != nil{
-		ctx.JSON(http.StatusInternalServerError,errResponse(err))
+	accounts, err := server.store.ListAccounts(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errResponse(err))
 		return
 	}
-	ctx.JSON(http.StatusOK,accounts)
+	ctx.JSON(http.StatusOK, accounts)
 }
 
-type deleteAccountReq struct{
+type deleteAccountReq struct {
 	ID int64 `form:"id" binding:"required"`
 }
-func(server *server)deleteAccount(ctx *gin.Context){
+
+func (server *server) deleteAccount(ctx *gin.Context) {
 	var req deleteAccountReq
-	err:=ctx.ShouldBindQuery(&req)
-	if err != nil{
-		ctx.JSON(http.StatusBadRequest,errResponse(err))
+	err := ctx.ShouldBindQuery(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errResponse(err))
 		return
 	}
-	err = server.store.DeleteAccount(ctx,req.ID)
-	if err != nil{
-		if err == sql.ErrNoRows{
-			ctx.JSON(http.StatusNotFound,errResponse(err))
+	err = server.store.DeleteAccount(ctx, req.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errResponse(err))
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError,errResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errResponse(err))
 		return
 	}
-	ctx.JSON(http.StatusOK,gin.H{"status":fmt.Sprintf("Account with id %v deleted",req.ID)})
+	ctx.JSON(http.StatusOK, gin.H{"status": fmt.Sprintf("Account with id %v deleted", req.ID)})
 }
+
 type putAccountRequest struct {
-	Balance    int64 `json:"balance" binding:"required"`
-	ID int64 `json:"ID" binding:"required"`
+	Balance int64 `json:"balance" binding:"required"`
+	ID      int64 `json:"ID" binding:"required"`
 }
-func(server *server)putAccount(ctx *gin.Context){
+
+func (server *server) putAccount(ctx *gin.Context) {
 	var req putAccountRequest
 
-	err :=ctx.ShouldBind(&req)
-	if err != nil{
-		ctx.JSON(http.StatusBadRequest,errResponse(err))
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errResponse(err))
 		return
 	}
-	arg :=db.UpdateAccountParams{
+	arg := db.UpdateAccountParams{
 		Balance: req.Balance,
-		ID: req.ID,
+		ID:      req.ID,
 	}
-	account,err := server.store.UpdateAccount(ctx,arg)
-	if err != nil{
-		if err == sql.ErrNoRows{
-			ctx.JSON(http.StatusNotFound,errResponse(err))
+	account, err := server.store.UpdateAccount(ctx, arg)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errResponse(err))
 			return
 		}
-		ctx.JSON(http.StatusNotFound,errResponse(err))
+		ctx.JSON(http.StatusNotFound, errResponse(err))
 		return
 	}
-	ctx.JSON(http.StatusOK,account)
+	ctx.JSON(http.StatusOK, account)
 }

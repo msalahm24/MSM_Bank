@@ -7,32 +7,33 @@ import (
 	db "github.com/mahmoud24598salah/MSM_Bank/db/sqlc"
 )
 
- type server struct{
-	store db.Store
-	router *gin.Engine 
- }
+type server struct {
+	store  db.Store
+	router *gin.Engine
+}
 
- func Newserver(store db.Store) *server{
+func Newserver(store db.Store) *server {
 	server := &server{store: store}
 	router := gin.Default()
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok{
-		v.RegisterValidation("currency",validCurrency)
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validCurrency)
 	}
-	router.POST("/accounts",server.createAccount)
-	router.GET("/accounts/:id",server.getAccount)
-	router.GET("/accounts",server.listAccounts) 
-	router.DELETE("/accounts",server.deleteAccount)
-	router.PUT("/accounts",server.putAccount)
-	router.POST("/transfer",server.CreateTransfer)
+	router.POST("/accounts", server.createAccount)
+	router.POST("/users", server.createUser)
+	router.GET("/accounts/:id", server.getAccount)
+	router.GET("/accounts", server.listAccounts)
+	router.DELETE("/accounts", server.deleteAccount)
+	router.PUT("/accounts", server.putAccount)
+	router.POST("/transfer", server.CreateTransfer)
 	server.router = router
 
 	return server
- }
+}
 
-func(server *server) Start(address string)error{
+func (server *server) Start(address string) error {
 	return server.router.Run(address)
 }
 
- func errResponse(err error) gin.H{
-	return gin.H{"error":err.Error()}
+func errResponse(err error) gin.H {
+	return gin.H{"error": err.Error()}
 }
