@@ -8,7 +8,7 @@ import (
 
 type Store interface {
 	TransferTx(ctx context.Context, arg TransferTxParms) (TransferTxResult, error)
-	Querier 
+	Querier
 }
 type SqlStore struct {
 	*Queries
