@@ -10,12 +10,10 @@ import (
 	"github.com/mahmoud24598salah/MSM_Bank/util"
 )
 
-
-
 func main() {
-	config,err := util.LoadConfig(".")
-	if err != nil{
-		log.Fatal("Can nor read the config file",err)
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		log.Fatal("Can nor read the config file", err)
 	}
 	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
@@ -24,11 +22,14 @@ func main() {
 
 	store := db.NewStore(conn)
 
-	server :=api.Newserver(store)
+	server, err := api.Newserver(config, store)
+	if err != nil {
+		log.Fatal("Cannot create server", err)
+	}
 
-	err= server.Start(config.SreverAddress)
-	if err != nil{
-		log.Fatal("Cannot start server",err)
+	err = server.Start(config.SreverAddress)
+	if err != nil {
+		log.Fatal("Cannot start server", err)
 	}
 
 }
