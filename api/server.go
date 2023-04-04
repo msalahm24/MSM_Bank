@@ -19,7 +19,7 @@ type server struct {
 }
 
 func Newserver(config util.Config, store db.Store) (*server, error) {
-	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricLKey)
+	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricLKey)
 	if err != nil {
 		return nil, fmt.Errorf("can not create token maker: %w", err)
 	}
@@ -28,7 +28,7 @@ func Newserver(config util.Config, store db.Store) (*server, error) {
 		store:      store,
 		tokenMaker: tokenMaker,
 	}
-	
+
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("currency", validCurrency)
 	}
@@ -38,14 +38,17 @@ func Newserver(config util.Config, store db.Store) (*server, error) {
 
 func (server *server) setUpRouter() {
 	router := gin.Default()
-	router.POST("/accounts", server.createAccount)
+	
 	router.POST("/users", server.createUser)
-	router.GET("/accounts/:id", server.getAccount)
-	router.GET("/accounts", server.listAccounts)
-	router.DELETE("/accounts", server.deleteAccount)
-	router.PUT("/accounts", server.putAccount)
-	router.POST("/transfer", server.CreateTransfer)
 	router.POST("/users/login", server.loginUser)
+	
+	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	authRoutes.POST("/accounts", server.createAccount)
+	authRoutes.GET("/accounts/:id", server.getAccount)
+	authRoutes.GET("/accounts", server.listAccounts)
+	authRoutes.DELETE("/accounts", server.deleteAccount)
+	authRoutes.PUT("/accounts", server.putAccount)
+	authRoutes.POST("/transfer", server.CreateTransfer)
 	server.router = router
 }
 

@@ -74,7 +74,7 @@ func (server *server) createUser(ctx *gin.Context) {
 }
 
 type loginUserRequest struct {
-	UserName string `json:"username" binding:"required,alphanum"`
+	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`
 }
 
@@ -90,7 +90,7 @@ func (server *server) loginUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest,errResponse(err))
 		return
 	}
-	user,err := server.store.GetUser(ctx,req.UserName)
+	user,err := server.store.GetUser(ctx,req.Email)
 	if err != nil{
 		if err == sql.ErrNoRows{
 			ctx.JSON(http.StatusNotFound,errResponse(err))
