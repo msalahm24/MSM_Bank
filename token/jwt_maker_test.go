@@ -17,7 +17,7 @@ func TestJWTMaker(t *testing.T) {
 	issuedAt := time.Now()
 	expiredAt := issuedAt.Add(duration)
 
-	token, err := maker.CreateToken(userName,duration)
+	token, _,err := maker.CreateToken(util.RandomEmail(),userName,duration)
 	require.NoError(t, err)
 	require.NotEmpty(t,token)
 	payload, err := maker.VerifyToken(token)
@@ -33,7 +33,7 @@ func TestJWTMaker(t *testing.T) {
 func TestExpiredJWTToken(t *testing.T) {
 	maker, err := NewJWTMaker(util.RandomString(32))
 	require.NoError(t,err)
-	token, err := maker.CreateToken(util.RandomOwnerName(),-time.Minute)
+	token,_,err := maker.CreateToken(util.RandomEmail(),util.RandomOwnerName(),-time.Minute)
 	require.NoError(t,err)
 	payload, err := maker.VerifyToken(token)
 	require.Error(t,err )
@@ -43,7 +43,7 @@ func TestExpiredJWTToken(t *testing.T) {
 
 
 func TestInvalidJWTTokenAlgNone(t *testing.T) {
-	payload,err := NewPayload(util.RandomOwnerName(),time.Minute)
+	payload,err := NewPayload(util.RandomEmail(),util.RandomOwnerName(),time.Minute)
 	require.NoError(t, err)
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodNone,payload)
 	token, err := jwtToken.SignedString(jwt.UnsafeAllowNoneSignatureType)

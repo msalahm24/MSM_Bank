@@ -14,7 +14,7 @@ import (
 type server struct {
 	config     util.Config
 	store      db.Store
-	tokenMaker token.IMaker
+	tokenMaker token.Maker
 	router     *gin.Engine
 }
 
@@ -41,7 +41,8 @@ func (server *server) setUpRouter() {
 	
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
-	
+	router.POST("/token/renew_access",server.renewAccessToken)
+
 	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 	authRoutes.POST("/accounts", server.createAccount)
 	authRoutes.GET("/accounts/:id", server.getAccount)

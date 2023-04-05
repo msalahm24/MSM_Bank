@@ -6,12 +6,15 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
 	AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (Account, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteAccount(ctx context.Context, arg DeleteAccountParams) error
@@ -20,6 +23,7 @@ type Querier interface {
 	GetEntriesByAccountId(ctx context.Context, accountID int64) ([]Entry, error)
 	GetEntriesByAmount(ctx context.Context, amount int64) ([]Entry, error)
 	GetEntryById(ctx context.Context, id int64) (Entry, error)
+	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetTransferById(ctx context.Context, id int64) (Transfer, error)
 	GetTransfersByAmount(ctx context.Context, amount int64) ([]Transfer, error)
 	GetTransfersByFromAccountId(ctx context.Context, fromAccountID int64) ([]Transfer, error)
