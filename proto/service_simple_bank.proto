@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package pb;
+
+
+import "rpc_create_user.proto";
+import "rpc_login_user.proto";
+option go_package = "github.com/mahmoud24598salah/MSM_Bank/pb";
+
+service MSMBank{
+    rpc CreateUser (CreateUserRequest)returns (CreateUserRes){}
+    rpc LoginUser (LoginUserRequest) returns (LoginUserRes){}
+}
